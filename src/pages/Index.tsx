@@ -1,13 +1,49 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState, useMemo } from "react";
+import SearchBar from "@/components/SearchBar";
+import CourseList from "@/components/CourseList";
+import QuoteBox from "@/components/QuoteBox";
+import coursesData from "@/data/courses.json";
+
+interface Course {
+  id: number;
+  title: string;
+  category: string;
+  duration: string;
+}
 
 const Index = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredCourses = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return coursesData as Course[];
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    return (coursesData as Course[]).filter(
+      (course) =>
+        course.title.toLowerCase().includes(query) ||
+        course.category.toLowerCase().includes(query)
+    );
+  }, [searchQuery]);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <main className="app-container">
+      <header className="app-header">
+        <h1 className="app-title">Course Finder</h1>
+        <p className="app-subtitle">Discover your next learning adventure</p>
+      </header>
+
+      <QuoteBox />
+
+      <SearchBar value={searchQuery} onChange={setSearchQuery} />
+
+      <p className="results-count">
+        {filteredCourses.length} course{filteredCourses.length !== 1 ? "s" : ""} found
+      </p>
+
+      <CourseList courses={filteredCourses} searchQuery={searchQuery} />
+    </main>
   );
 };
 
