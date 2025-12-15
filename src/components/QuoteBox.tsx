@@ -11,21 +11,52 @@ const QuoteBox = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Fallback quotes in case API fails
+  const fallbackQuotes: QuoteData[] = [
+    {
+      content: "The only way to do great work is to love what you do.",
+      author: "Steve Jobs",
+    },
+    {
+      content: "Innovation distinguishes between a leader and a follower.",
+      author: "Steve Jobs",
+    },
+    {
+      content: "Life is what happens when you're busy making other plans.",
+      author: "John Lennon",
+    },
+    {
+      content: "The future belongs to those who believe in the beauty of their dreams.",
+      author: "Eleanor Roosevelt",
+    },
+    {
+      content: "It is during our darkest moments that we must focus to see the light.",
+      author: "Aristotle",
+    },
+  ];
+
   const fetchQuote = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("https://api.quotable.io/random");
+      // Try ZenQuotes API first (simpler and more reliable)
+      const response = await fetch("https://zenquotes.io/api/random");
       if (!response.ok) {
-        throw new Error("Failed to fetch quote");
+        throw new Error("API failed");
       }
       const data = await response.json();
-      setQuote({
-        content: data.content,
-        author: data.author,
-      });
+      if (data && data[0]) {
+        setQuote({
+          content: data[0].q,
+          author: data[0].a.replace(/, type.+/, ""), // Clean author name
+        });
+      } else {
+        throw new Error("Invalid response");
+      }
     } catch (err) {
-      setError("Unable to load quote. Please try again later.");
+      // Use a random fallback quote if API fails
+      const randomQuote = fallbackQuotes[Math.floor(Math.random() * fallbackQuotes.length)];
+      setQuote(randomQuote);
     } finally {
       setLoading(false);
     }
